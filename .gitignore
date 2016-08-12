@@ -1,6 +1,6 @@
 node_modules
 dist
 npm-debug.log
-
+.DS_Store
 ## API keys
 /env/config.js

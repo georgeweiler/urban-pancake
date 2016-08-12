@@ -1,61 +1,39 @@
-const express = require('express'),
-  app = express(),
-  router = express.Router(),
-  http = require('http').Server(app),
-  request = require('request'),
-  bodyParser = require('body-parser'),
-  path = require('path'),
-  secretKeys = require('../env/config'),
-  mongoose = require('mongoose'),
-  Twitter = require('twitter');
+const express = require('express');
+const bodyParser = require('body-parser');
+const path = require('path');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
+const webpack = require('webpack');
+const config = require('../webpack.dev.config');
 
-
-// let twitterClient = new Twitter(secretKeys.twitterInfo);
-// let truckTweets = exports.truckTweets = {};
-// let trucks = ['senorsisig','curryupnow'];
-
-
-// trucks.forEach( truck => {
-//   twitterClient.get('search/tweets', {q: truck}, function(error, tweets, response){
-//     if(error) { return error;}
-//     if (!error) {
-//       truckTweets[truck]=tweets.statuses[0].text;
-//       console.log(truckTweets);
-//     }
-//   });
-// });
+const compiler = webpack(config);
+const app = express();
+const router = express.Router();
 
 if (process.env.NODE_ENV === 'development') {
-  const webpackDevMiddleware = require("webpack-dev-middleware"),
-    webpackHotMiddleware = require("webpack-hot-middleware"),
-    webpack = require("webpack"),
-    config = require('../webpack.dev.config'),
-    compiler = webpack(config);
-
   app.use(webpackDevMiddleware(compiler, {
     publicPath: config.output.publicPath,
     stats: {
       colors: true,
-      chunks: false
-    }
-  }))
-  app.use(webpackHotMiddleware(compiler, {log: console.log}));
+      chunks: false,
+    },
+  }));
+  app.use(webpackHotMiddleware(compiler, { log: console.log }));
 } else {
-  app.use(express.static(__dirname + '/../dist'));
+  app.use(express.static(path.resolve(__dirname, './../dist')));
 }
-
 
 app.use(bodyParser.json());
 app.use(router);
 
-router.get('/',function(req, res){
-  res.sendFile(path.resolve(__dirname + '/../client/index.html'));
-  console.log("connecting to root...");
+router.get('/', (req, res) => {
+  res.sendFile(path.resolve(__dirname, './../client/index.html'));
+  console.log('connecting to root...');
 });
 
 require('./request-handler')(app);
 
-app.listen(process.env.PORT || 8000, function(){
+app.listen(process.env.PORT || 8000, () => {
   console.log('App listening on port 8000');
 });
 
